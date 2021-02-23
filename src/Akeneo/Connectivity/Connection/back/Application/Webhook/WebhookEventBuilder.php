@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Akeneo\Connectivity\Connection\Application\Webhook;
 
-use Akeneo\Connectivity\Connection\Application\Webhook\Log\EventSubscriptionDataBuildErrorLog;
+use Akeneo\Connectivity\Connection\Application\Webhook\Service\EventSubscriptionLogInterface;
 use Akeneo\Connectivity\Connection\Domain\Webhook\Exception\WebhookEventDataBuilderNotFoundException;
 use Akeneo\Connectivity\Connection\Domain\Webhook\Model\WebhookEvent;
 use Akeneo\Platform\Component\EventQueue\BulkEventInterface;
@@ -13,7 +13,6 @@ use Akeneo\Platform\Component\Webhook\EventBuildingExceptionInterface;
 use Akeneo\Platform\Component\Webhook\EventDataBuilderInterface;
 use Akeneo\Platform\Component\Webhook\EventDataCollection;
 use Akeneo\UserManagement\Component\Model\UserInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -25,17 +24,16 @@ class WebhookEventBuilder
 {
     /** @var iterable<EventDataBuilderInterface> */
     private iterable $eventDataBuilders;
-
-    private LoggerInterface $logger;
+    private EventSubscriptionLogInterface $eventSubscriptionLog;
 
     /**
      * @param iterable<EventDataBuilderInterface> $eventDataBuilders
-     * @param LoggerInterface $logger
+     * @param EventSubscriptionLogInterface $eventSubscriptionLog
      */
-    public function __construct(iterable $eventDataBuilders, LoggerInterface $logger)
+    public function __construct(iterable $eventDataBuilders, EventSubscriptionLogInterface $eventSubscriptionLog)
     {
         $this->eventDataBuilders = $eventDataBuilders;
-        $this->logger = $logger;
+        $this->eventSubscriptionLog = $eventSubscriptionLog;
     }
 
     /**
@@ -56,16 +54,11 @@ class WebhookEventBuilder
             $events = $event instanceof EventInterface ? [$event] : $event->getEvents();
             $webhookEvents = $this->buildWebhookEvents($events, $eventDataCollection, $context);
         } catch (EventBuildingExceptionInterface $exception) {
-            $this->logger->warning(
-                json_encode(
-                    (new EventSubscriptionDataBuildErrorLog(
-                        $exception->getMessage(),
-                        $context['connection_code'],
-                        $context['user']->getId(),
-                        $event
-                    ))->toLog(),
-                    JSON_THROW_ON_ERROR
-                )
+            $this->eventSubscriptionLog->logEventDataBuildError(
+                $exception->getMessage(),
+                $context['connection_code'],
+                $context['user']->getId(),
+                $event
             );
         }
 
@@ -120,16 +113,11 @@ class WebhookEventBuilder
             }
 
             if ($data instanceof \Throwable) {
-                $this->logger->warning(
-                    json_encode(
-                        (new EventSubscriptionDataBuildErrorLog(
-                            $data->getMessage(),
-                            $context['connection_code'],
-                            $context['user']->getId(),
-                            $event
-                        ))->toLog(),
-                        JSON_THROW_ON_ERROR
-                    )
+                $this->eventSubscriptionLog->logEventDataBuildError(
+                    $data->getMessage(),
+                    $context['connection_code'],
+                    $context['user']->getId(),
+                    $event
                 );
 
                 continue;
