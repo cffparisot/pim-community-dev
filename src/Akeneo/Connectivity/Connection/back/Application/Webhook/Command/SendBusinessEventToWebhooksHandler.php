@@ -87,7 +87,7 @@ final class SendBusinessEventToWebhooksHandler
                     $pimEventBulk->getEvents(),
                     $filteredPimEventBulk->getEvents()
                 );
-                if (null === $filteredPimEventBulk) {
+                if (0 === count($filteredPimEventBulk->getEvents())) {
                     continue;
                 }
 
@@ -141,6 +141,7 @@ final class SendBusinessEventToWebhooksHandler
         $this->client->bulkSend($requests());
 
         $this->cacheClearer->clear();
+        $this->eventsApiDebugLogger->flushLogs();
     }
 
     private function filterConnectionOwnEvents(
@@ -168,10 +169,6 @@ final class SendBusinessEventToWebhooksHandler
                 return true;
             }
         );
-
-        if (count($events) === 0) {
-            return null;
-        }
 
         return new BulkEvent($events);
     }

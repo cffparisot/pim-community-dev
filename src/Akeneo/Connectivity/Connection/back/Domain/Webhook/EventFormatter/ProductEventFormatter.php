@@ -27,9 +27,11 @@ class ProductEventFormatter extends EventFormatter
      */
     public function format(EventInterface $event): array
     {
-        return [
-            ...parent::format($event),
-            'product_identifier' => $event->getIdentifier()
-        ];
+        return array_merge(
+            parent::format($event),
+            [
+                'product_identifier' => $event->getIdentifier()
+            ]
+        );
     }
 }
