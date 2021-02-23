@@ -124,7 +124,7 @@ class EventsApiDebugLogger
                 }
 
                 throw new \RuntimeException(
-                    sprinf('No event formatter declared for %s', get_class($event))
+                    sprintf('No event formatter declared for %s', get_class($event))
                 );
             }
         }, $events);

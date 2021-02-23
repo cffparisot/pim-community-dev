@@ -82,9 +82,10 @@ final class SendBusinessEventToWebhooksHandler
                 $user = $this->webhookUserAuthenticator->authenticate($webhook->userId());
 
                 $filteredPimEventBulk = $this->filterConnectionOwnEvents($webhook, $user->getUsername(), $pimEventBulk);
-                $this->eventsApiDebugLogger->logEventSubscriptionSkippedOwnEvents(
+                $this->logEventSubscriptionSkippedOwnEvents(
                     $webhook->connectionCode(),
-                    array_diff($pimEventBulk->getEvents(), $filteredPimEventBulk->getEvents())
+                    $pimEventBulk->getEvents(),
+                    $filteredPimEventBulk->getEvents()
                 );
                 if (null === $filteredPimEventBulk) {
                     continue;
@@ -173,6 +174,17 @@ final class SendBusinessEventToWebhooksHandler
         }
 
         return new BulkEvent($events);
+    }
+
+    private function logEventSubscriptionSkippedOwnEvents(string $connectionCode, array $events, array $filteredEvents)
+    {
+        $skippedEvents = array_udiff(
+            $events,
+            $filteredEvents,
+            fn (EventInterface $event, EventInterface $filteredEvent) => $event->getUuid() === $filteredEvent->getUuid() ? 0 : -1
+        );
+
+        $this->eventsApiDebugLogger->logEventSubscriptionSkippedOwnEvents($connectionCode, $skippedEvents);
     }
 
     /**
