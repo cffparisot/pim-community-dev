@@ -39,7 +39,7 @@ abstract class InternalApiTestCase extends TestCase
         $this->client->getCookieJar()->set($cookie);
     }
 
-    protected function createVariantProduct(string $identifier, array $data = []) : ProductInterface
+    protected function createProduct(string $identifier, array $data = []) : ProductInterface
     {
         $product = $this->get('pim_catalog.builder.product')->createProduct($identifier);
         $this->get('pim_catalog.updater.product')->update($product, $data);
@@ -60,10 +60,6 @@ abstract class InternalApiTestCase extends TestCase
         return $product;
     }
 
-    /**
-     * Each time we create a product model, a batch job is pushed into the queue to calculate the
-     * completeness of its descendants.
-     */
     protected function createProductModel(array $data = []) : ProductModelInterface
     {
         $productModel = $this->get('pim_catalog.factory.product_model')->create();
