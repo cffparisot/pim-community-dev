@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Akeneo\Connectivity\Connection\Application\Webhook\Service;
 
 use Akeneo\Connectivity\Connection\Domain\Clock;
+use Akeneo\Connectivity\Connection\Domain\Webhook\EventFormatter\EventFormatter;
 use Akeneo\Connectivity\Connection\Domain\Webhook\Persistence\Repository\EventsApiDebugRepository;
+use Akeneo\Platform\Component\EventQueue\EventInterface;
 
 /**
  * @copyright 2021 Akeneo SAS (http://www.akeneo.com)
@@ -35,15 +37,43 @@ class EventsApiDebugLogger
 
     private EventsApiDebugRepository $repository;
 
-    public function __construct(EventsApiDebugRepository $repository, Clock $clock, int $bufferSize = 100)
-    {
+    /**
+     * @var iterable<EventFormatter>
+     */
+    private iterable $eventFormatters;
+
+    public function __construct(
+        EventsApiDebugRepository $repository,
+        Clock $clock,
+        iterable $eventFormatters,
+        int $bufferSize = 100
+    ) {
         $this->repository = $repository;
         $this->clock = $clock;
+        $this->eventFormatters = $eventFormatters;
         $this->bufferSize = $bufferSize;
         $this->buffer = [];
     }
 
-    public function logLimitOfEventApiRequestsReached(): void
+    /**
+     * @param EventInterface[] $events
+     */
+    public function logEventSubscriptionSkippedOwnEvents(
+        string $connectionCode,
+        array $events
+    ): void {
+        $this->addLog([
+            'timestamp' => $this->clock->now()->getTimestamp(),
+            'level' => self::LEVEL_NOTICE,
+            'message' => 'The event was not sent because it was raised by the same connection',
+            'connection_code' => $connectionCode,
+            'context' => [
+                'events' => $this->formatEvents($events)
+            ]
+        ]);
+    }
+
+    public function logLimitOfEventsApiRequestsReached(): void
     {
         $this->addLog([
             'timestamp' => $this->clock->now()->getTimestamp(),
@@ -80,5 +110,23 @@ class EventsApiDebugLogger
         if (count($this->buffer) >= $this->bufferSize) {
             $this->flushLogs();
         }
+    }
+
+    /**
+     * @param EventInterface[] $events
+     */
+    private function formatEvents(array $events)
+    {
+        return \array_map(function (EventInterface $event) {
+            foreach ($this->eventFormatters as $formatter) {
+                if (true === $formatter->supports($event)) {
+                    return $formatter->format($event);
+                }
+
+                throw new \RuntimeException(
+                    sprinf('No event formatter declared for %s', get_class($event))
+                );
+            }
+        }, $events);
     }
 }

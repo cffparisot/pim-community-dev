@@ -68,7 +68,7 @@ class EventsApiRequestsLimitEventSubscriberSpec extends ObjectBehavior
             ->execute(Argument::cetera())
             ->willReturn(1);
 
-        $eventsApiDebugLogger->logLimitOfEventApiRequestsReached()
+        $eventsApiDebugLogger->logLimitOfEventsApiRequestsReached()
             ->shouldBeCalled();
         $eventsApiDebugLogger->flushLogs()
             ->shouldBeCalled();

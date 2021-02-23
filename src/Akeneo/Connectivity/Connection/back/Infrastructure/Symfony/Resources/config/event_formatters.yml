@@ -1,0 +1,8 @@
+services:
+    Akeneo\Connectivity\Connection\Domain\Webhook\EventFormatter\ProductEventFormatter:
+        tags:
+            - { name: akeneo_connectivity.connection.webhook.event_formatter }
+
+    Akeneo\Connectivity\Connection\Domain\Webhook\EventFormatter\ProductModelEventFormatter:
+        tags:
+            - { name: akeneo_connectivity.connection.webhook.event_formatter }

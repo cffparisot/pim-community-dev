@@ -50,7 +50,7 @@ class EventsApiDebugLoggerSpec extends ObjectBehavior
         ])
             ->shouldBeCalled();
 
-        $this->logLimitOfEventApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
     }
 
     public function it_flushs_logs_in_the_buffer(
@@ -59,10 +59,10 @@ class EventsApiDebugLoggerSpec extends ObjectBehavior
         $eventsApiDebugRepository->bulkInsert(Argument::size(4))
             ->shouldBeCalled();
 
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
         $this->flushLogs();
     }
 
@@ -78,9 +78,9 @@ class EventsApiDebugLoggerSpec extends ObjectBehavior
         $eventsApiDebugRepository->bulkInsert(Argument::size(2))
             ->shouldBeCalledTimes(2);
 
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
-        $this->logLimitOfEventApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
+        $this->logLimitOfEventsApiRequestsReached();
     }
 }

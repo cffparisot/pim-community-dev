@@ -6,7 +6,6 @@ namespace Akeneo\Pim\Enrichment\Component\Product\Message;
 
 use Akeneo\Platform\Component\EventQueue\Author;
 use Akeneo\Platform\Component\EventQueue\Event;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Webmozart\Assert\Assert;
 
 /**
